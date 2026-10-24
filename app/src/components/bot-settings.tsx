@@ -69,6 +69,7 @@ import { useNow } from "@/lib/threads"
 import { cn } from "@/lib/utils"
 import { MIN_PLUGIN_VERSION, pluginOutdated } from "@/lib/version"
 import { McpsTab } from "@/components/mcps-tab"
+import { SkillsTab } from "@/components/skills-tab"
 
 type Connection =
   | { state: "idle" }
@@ -206,8 +207,15 @@ export function BotEditor({
   const answers = useMcpFeatureAnswers(profile)
   const mcpServers = answers.list === "yes"
   const dictates = usePluginFeature(profile, DICTATION)
+  // The Skills tab is gated the same way, on its own feature: a Host that can't list skills has no
+  // tab, and a Host that hasn't answered keeps the address and draws General meanwhile.
+  const listsSkills = usePluginFeature(profile, "skills")
   const shown: BotTab =
-    (tab === "mcps" && !mcpServers) || (tab === "dictation" && dictates !== "yes") ? "general" : tab
+    (tab === "mcps" && !mcpServers) ||
+    (tab === "dictation" && dictates !== "yes") ||
+    (tab === "skills" && listsSkills !== "yes")
+      ? "general"
+      : tab
 
   // Local drafts so typing isn't fighting the live query; persisted on every change.
   const [name, setName] = useState(profile.name)
@@ -227,7 +235,9 @@ export function BotEditor({
       void navigate(`/settings/bots/${profile.id}`, { replace: true })
     if (tab === "dictation" && dictates === "no")
       void navigate(`/settings/bots/${profile.id}`, { replace: true })
-  }, [tab, answers.list, dictates, navigate, profile.id])
+    if (tab === "skills" && listsSkills === "no")
+      void navigate(`/settings/bots/${profile.id}`, { replace: true })
+  }, [tab, answers.list, dictates, listsSkills, navigate, profile.id])
 
   // One read of the host's model list, for both the tab's own open and General's Test connection.
   const readModels = useCallback(
@@ -304,6 +314,7 @@ export function BotEditor({
         <TabsTrigger value="models">Models</TabsTrigger>
         {dictates === "yes" && <TabsTrigger value="dictation">Dictation</TabsTrigger>}
         {mcpServers && <TabsTrigger value="mcps">MCP</TabsTrigger>}
+        {listsSkills === "yes" && <TabsTrigger value="skills">Skills</TabsTrigger>}
       </TabsList>
 
       <TabsContent value="general">
@@ -525,6 +536,12 @@ export function BotEditor({
       {mcpServers && (
         <TabsContent value="mcps">
           <McpsTab profile={profile} />
+        </TabsContent>
+      )}
+
+      {listsSkills === "yes" && (
+        <TabsContent value="skills">
+          <SkillsTab profile={profile} />
         </TabsContent>
       )}
     </Tabs>
