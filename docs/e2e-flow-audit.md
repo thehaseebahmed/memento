@@ -264,11 +264,7 @@ One key, the only one that walks the whole feature: #417–#421 each brought the
 ## The eleven that stay, and why only a browser can assert each
 
 Every one of these earns its browser by a mechanism no lower tier reproduces, and a stay is
-<<<<<<< HEAD
-replaced by itself. They are what the end-to-end registry holds once the other 57 keys leave
-=======
-replaced by itself. They are what the end-to-end registry holds once the other 61 keys leave
->>>>>>> f6d9104 (test(settings): prove the Skills tab, its switch and sheet on screen)
+replaced by itself. They are what the end-to-end registry holds once the other 60 keys leave
 (#314).
 
 | Key | Verdict | What it asserts today | Why only a browser can assert it |
