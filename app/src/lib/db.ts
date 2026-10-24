@@ -21,11 +21,6 @@ export interface Settings {
   breakReminders?: boolean
   /** Alt+1 to Alt+9 start a new chat with the bot added in that place. Off by default. */
   navShortcuts?: boolean
-  /**
-   * A reply's thinking stays folded until a tap opens it — nothing opens on its own, not even a row
-   * whose stretch still streams. Off by default, so a live turn shows its working out as it happens.
-   */
-  foldThinkingByDefault?: boolean
   /** The clock on this device's copy of the appearance record: a change made here, or one pulled. */
   appearanceAt?: number
   /** Shows the Developer section in Settings (tapping the version five times). */
@@ -68,7 +63,6 @@ export const APPEARANCE_FIELDS = [
   "steerByDefault",
   "breakReminders",
   "navShortcuts",
-  "foldThinkingByDefault",
 ] as const
 
 /** Those switches as sync reads them, present rather than optional, so a read needs no fallback. */
@@ -556,7 +550,6 @@ export const DEFAULT_SETTINGS: Settings & Appearance = {
   steerByDefault: false,
   breakReminders: true,
   navShortcuts: false,
-  foldThinkingByDefault: false,
 }
 
 export const DEFAULT_PROFILE = {
@@ -796,6 +789,20 @@ db.version(21).upgrade((tx) =>
     )
     .modify((message: Record<string, unknown>) => {
       message.reasoningRuns = [{ text: message.reasoning as string }]
+    }),
+)
+
+// v22: "Fold thinking by default" is retired — a reply's thinking opens in a sheet now, so nothing
+// opens on its own and there is nothing left to fold. The key goes from every device's settings
+// row: a save re-puts the row it reads, so leaving it behind would carry the dead switch for no
+// one, and a record another device pushes can still name it — `adoptAppearance` takes only the
+// fields this build knows.
+db.version(22).upgrade((tx) =>
+  tx
+    .table("settings")
+    .toCollection()
+    .modify((row: Record<string, unknown>) => {
+      delete row.foldThinkingByDefault
     }),
 )
 
